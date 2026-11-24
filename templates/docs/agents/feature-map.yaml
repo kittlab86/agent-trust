@@ -1,0 +1,42 @@
+# Feature map: teaches agents what the product is and how to reach every feature.
+# Kept consistent with the code by scripts/agent/check-feature-map (CI).
+#
+# Schema (per feature):
+#   id:            stable kebab-case id (also the folder name under src/features/ when co-located)
+#   names:         what users/PMs call it (first = canonical)
+#   synonyms:      other words seen in bug reports / Slack
+#   visual_cues:   how to recognize it in a screenshot
+#   reach:         how a user gets there
+#     steps:       ordered UI steps (using selectors below)
+#     shortcut:    keyboard shortcut(s), if any
+#     deep_link:   URL/route/deep link, if any
+#     seed:        fixture needed so the feature has data
+#   selectors:     name -> stable selector (data-testid / accessibility id)
+#   code:          paths that implement it (entry points first)
+#   hotspots:      known perf/stability risks
+#   verify:        what "working" looks like (observable assertions)
+#   status:        active | deprecated (replaced_by: <id>)
+
+features:
+  - id: sidebar
+    names: ["Sidebar", "Left sidebar"]
+    synonyms: ["chat list", "conversation list", "left panel"]
+    visual_cues: "Vertical panel on the left with a list of conversations and a + button at the top"
+    reach:
+      steps: ["launch", "sidebar is visible by default; if hidden press the shortcut"]
+      shortcut: "Cmd+B"
+      deep_link: "/"
+      seed: "fixtures/conversations-50.json"
+    selectors:
+      root: "[data-testid='sidebar.root']"
+      new_button: "[data-testid='sidebar.new']"
+      item: "[data-testid='sidebar.item']"
+    code:
+      - "src/features/sidebar/index.tsx"
+      - "src/features/sidebar/store.ts"
+    hotspots:
+      - "Scrolling 50+ items: list virtualization; watch for long tasks > 16ms"
+    verify:
+      - "Clicking sidebar.new adds an item at the top within 200ms"
+      - "Scrolling the full list produces no long tasks > 50ms"
+    status: active
